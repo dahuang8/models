@@ -47,6 +47,8 @@ def tf_example_from_annotations_data_frame(annotations_data_frame, label_map,
       filtered_data_frame.YMin.isnull()]
   image_id = annotations_data_frame.ImageID.iloc[0]
 
+  label_names = [s.encode('utf8') for s in filtered_data_frame_boxes.LabelName.as_matrix()]
+
   feature_map = {
       standard_fields.TfExampleFields.object_bbox_ymin:
           dataset_util.float_list_feature(
@@ -61,16 +63,15 @@ def tf_example_from_annotations_data_frame(annotations_data_frame, label_map,
           dataset_util.float_list_feature(
               filtered_data_frame_boxes.XMax.as_matrix()),
       standard_fields.TfExampleFields.object_class_text:
-          dataset_util.bytes_list_feature(
-              filtered_data_frame_boxes.LabelName.as_matrix()),
+          dataset_util.bytes_list_feature(label_names),
       standard_fields.TfExampleFields.object_class_label:
           dataset_util.int64_list_feature(
               filtered_data_frame_boxes.LabelName.map(lambda x: label_map[x])
               .as_matrix()),
       standard_fields.TfExampleFields.filename:
-          dataset_util.bytes_feature('{}.jpg'.format(image_id)),
+          dataset_util.bytes_feature('{}.jpg'.format(image_id).encode('utf8')),
       standard_fields.TfExampleFields.source_id:
-          dataset_util.bytes_feature(image_id),
+          dataset_util.bytes_feature(image_id.encode('utf8')),
       standard_fields.TfExampleFields.image_encoded:
           dataset_util.bytes_feature(encoded_image),
   }
